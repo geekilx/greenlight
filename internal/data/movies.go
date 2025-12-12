@@ -115,7 +115,7 @@ func (m *MovieModel) Delete(id int64) error {
 
 func (m *MovieModel) GetAll(title string, genres []string, f Filters) ([]*Movie, error) {
 	stmt := fmt.Sprintf(`SELECT * FROM movies WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
-AND (genres @> $2 OR $2 = '{}') ORDER BY %s %s, id ASC`, f.sortCoulmn(), f.sortDirecetion())
+AND (genres @> $2 OR $2 = '{}') ORDER BY %s %s, id ASC LIMIT %d OFFSET %d`, f.sortCoulmn(), f.sortDirecetion(), f.Limit(), f.Offset())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

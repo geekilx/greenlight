@@ -35,3 +35,11 @@ func ValidateFilters(v *validator.Validator, f Filters) {
 	v.Check(f.PageSize <= 100 && f.Page >= 1, "page_size", "page size must be between 1 and 100")
 	v.Check(validator.PermittedValue(f.Sort, f.SortSafeList...), "sort", "invalid sort value")
 }
+
+func (f Filters) Limit() int {
+	return f.PageSize
+}
+
+func (f Filters) Offset() int {
+	return (f.Page - 1) * f.PageSize
+}
