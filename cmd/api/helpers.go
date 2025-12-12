@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
+	"greenlight.ilx.net/internal/validator"
 )
 
 type envelope map[string]any
@@ -100,4 +102,50 @@ func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Reques
 
 func (app *application) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
 	app.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
+}
+
+func (app *application) editConflictResponse(w http.ResponseWriter, r *http.Request) {
+	message := "unable to update the record due to an edit conflict, please try again"
+	app.errorResponse(w, r, http.StatusConflict, message)
+}
+
+// Creating filters for pagination
+// An EXAMPLE of Query: /v1/movies?title=godfather&genres=crime,drama&page=1&page_size=5&sort=-year
+
+func (app *application) readString(qs url.Values, key string, defaultvalue string) string {
+	s := qs.Get(key)
+
+	if s == "" {
+		return defaultvalue
+	}
+
+	return s
+
+}
+
+func (app *application) readCSV(qs url.Values, key string, defaultValue []string) []string {
+
+	csv := qs.Get(key)
+
+	if csv == "" {
+		return defaultValue
+	}
+	return strings.Split(csv, ",")
+
+}
+
+func (app *application) readInt(qs url.Values, key string, defaultValue int, v *validator.Validator) int {
+	s := qs.Get(key)
+	if s == "" {
+		return defaultValue
+	}
+
+	num, err := strconv.Atoi(s)
+	if err != nil {
+		v.AddError(key, "must be integer value")
+		return defaultValue
+	}
+
+	return num
+
 }

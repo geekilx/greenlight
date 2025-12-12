@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/lib/pq"
@@ -66,14 +67,24 @@ func (m *MovieModel) GetMovie(id int64) (*Movie, error) {
 
 func (m *MovieModel) Update(movie *Movie) error {
 
-	stmt := `UPDATE movies SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1 WHERE id = $5 RETURNING version`
+	stmt := `UPDATE movies SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1 WHERE id = $5 AND version = $6 RETURNING version`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	args := []any{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres), movie.ID}
+	args := []any{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres), movie.ID, movie.Version}
 
-	return m.DB.QueryRowContext(ctx, stmt, args...).Scan(&movie.Version)
+	err := m.DB.QueryRowContext(ctx, stmt, args...).Scan(&movie.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+
+	return nil
 
 }
 
@@ -99,6 +110,40 @@ func (m *MovieModel) Delete(id int64) error {
 	}
 
 	return nil
+
+}
+
+func (m *MovieModel) GetAll(title string, genres []string, f Filters) ([]*Movie, error) {
+	stmt := fmt.Sprintf(`SELECT * FROM movies WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
+AND (genres @> $2 OR $2 = '{}') ORDER BY %s %s, id ASC`, f.sortCoulmn(), f.sortDirecetion())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	fmt.Println(f.Sort)
+	rows, err := m.DB.QueryContext(ctx, stmt, title, pq.Array(genres))
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var movies []*Movie
+
+	for rows.Next() {
+		var movie Movie
+
+		err := rows.Scan(&movie.ID, &movie.CreatedAt, &movie.Title, &movie.Year, &movie.Runtime, pq.Array(&movie.Genres), &movie.Version)
+
+		if err != nil {
+			return nil, err
+		}
+
+		movies = append(movies, &movie)
+
+	}
+
+	return movies, nil
 
 }
 
