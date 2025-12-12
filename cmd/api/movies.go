@@ -213,7 +213,7 @@ func (app *application) listMoviesHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if movies == nil {
-		app.notFoundResponse(w, r)
+		app.noMoviesFound(w, r)
 		return
 	}
 

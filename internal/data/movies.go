@@ -120,7 +120,6 @@ AND (genres @> $2 OR $2 = '{}') ORDER BY %s %s, id ASC LIMIT %d OFFSET %d`, f.so
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	fmt.Println(f.Sort)
 	rows, err := m.DB.QueryContext(ctx, stmt, title, pq.Array(genres))
 	if err != nil {
 		return nil, err

@@ -40,6 +40,11 @@ func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request)
 	app.errorResponse(w, r, http.StatusNotFound, message)
 }
 
+func (app *application) noMoviesFound(w http.ResponseWriter, r *http.Request) {
+	message := "There is no movie to be shown"
+	app.errorResponse(w, r, http.StatusNotFound, message)
+}
+
 func (app *application) methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
 	message := fmt.Sprintf("the %s method is not supported for this resource", r.Method)
 	app.errorResponse(w, r, http.StatusMethodNotAllowed, message)
