@@ -1,10 +1,12 @@
-{{define "subject"}} welcome to movie api app {{end}}
-
-
+{{define "subject"}}Welcome to Greenlight!{{end}}
 {{define "plainBody"}}
 Hi,
-Thanks for signing up for a Api Movie account. We're excited to have you on board!
-For future reference, your user ID number is {{.ID}}.
+Thanks for signing up for a Greenlight account. We're excited to have you on board!
+For future reference, your user ID number is {{.userID}}.
+Please send a request to the `PUT /v1/users/activated` endpoint with the following JSON
+body to activate your account:
+{"token": "{{.activationToken}}"}
+Please note that this is a one-time use token and it will expire in 3 days.
 Thanks,
 The Greenlight Team
 {{end}}
@@ -17,8 +19,14 @@ The Greenlight Team
 </head>
 <body>
 <p>Hi,</p>
-<p>Thanks for signing up for a Api Movie account. We're excited to have you on board!</p>
-<p>For future reference, your user ID number is {{.ID}}.</p>
+<p>Thanks for signing up for a Greenlight account. We're excited to have you on board!</p>
+<p>For future reference, your user ID number is {{.userID}}.</p>
+<p>Please send a request to the <code>PUT /v1/users/activated</code> endpoint with the
+following JSON body to activate your account:</p>
+<pre><code>
+{"token": "{{.activationToken}}"}
+</code></pre>
+<p>Please note that this is a one-time use token and it will expire in 3 days.</p>
 <p>Thanks,</p>
 <p>The Greenlight Team</p>
 </body>
