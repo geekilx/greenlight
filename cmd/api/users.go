@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"greenlight.ilx.net/internal/data"
@@ -52,6 +53,22 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		}
 		return
 	}
+
+	app.wg.Add(1)
+	go func() {
+
+		defer app.wg.Done()
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.Error(fmt.Sprintf("%v", err))
+			}
+		}()
+
+		err = app.mailer.Send(user.Email, "user_welcome.tmpl", user)
+		if err != nil {
+			app.logger.Error(err.Error())
+		}
+	}()
 
 	err = app.writeJSON(w, r, http.StatusCreated, envelope{"user": user}, nil)
 	if err != nil {

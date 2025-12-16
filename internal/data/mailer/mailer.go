@@ -42,13 +42,13 @@ func (m Mailer) Send(recipient, templateFile string, data any) error {
 	}
 
 	plainBody := new(bytes.Buffer)
-	err = tmpl.ExecuteTemplate(plainBody, "plainbody", data)
+	err = tmpl.ExecuteTemplate(plainBody, "plainBody", data)
 	if err != nil {
 		return err
 	}
 
 	htmlBody := new(bytes.Buffer)
-	err = tmpl.ExecuteTemplate(htmlBody, "htmlbody", data)
+	err = tmpl.ExecuteTemplate(htmlBody, "htmlBody", data)
 	if err != nil {
 		return nil
 	}
@@ -60,11 +60,15 @@ func (m Mailer) Send(recipient, templateFile string, data any) error {
 	msg.SetBody("text/plain", plainBody.String())
 	msg.AddAlternative("text/html", htmlBody.String())
 
-	err = m.dialer.DialAndSend(msg)
-	if err != nil {
-		return err
+	for i := 0; i < 3; i++ {
+		err = m.dialer.DialAndSend(msg)
+		if err == nil {
+			return nil
+		}
+
+		time.Sleep(500 * time.Millisecond)
 	}
 
-	return nil
+	return err
 
 }
