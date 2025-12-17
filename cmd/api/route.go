@@ -24,6 +24,6 @@ func (app *application) route() http.Handler {
 	router.HandlerFunc(http.MethodPut, "/v1/users/activated", app.activateUserHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/users/authentication", app.userAuthenticationHandler)
 
-	return app.panicRecover(app.rateLimit(router))
+	return app.panicRecover(app.rateLimit(app.Authenticate(router)))
 
 }
