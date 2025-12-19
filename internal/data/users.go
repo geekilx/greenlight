@@ -58,6 +58,10 @@ func (p *password) Matches(plaintextPassword string) (bool, error) {
 	return true, nil
 }
 
+func IsAnonymous(user *User) bool {
+	return user == AnonymousUser
+}
+
 func (m *UserModel) Insert(user *User) error {
 	stmt := `INSERT INTO users (name, email, password_hash, activated) VALUES($1, $2, $3, $4) RETURNING id, created_at, version`
 
