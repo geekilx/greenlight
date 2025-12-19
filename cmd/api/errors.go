@@ -67,3 +67,15 @@ func (app *application) invalidAuthenticationTokenResponse(w http.ResponseWriter
 	message := "invalid or missing authentication token"
 	app.errorResponse(w, r, http.StatusUnauthorized, message)
 }
+
+func (app *application) authorizationRequired(w http.ResponseWriter, r *http.Request) {
+	message := "you don't have the premission to visit this page"
+
+	app.errorResponse(w, r, http.StatusUnauthorized, message)
+}
+
+func (app *application) inactiveUser(w http.ResponseWriter, r *http.Request) {
+	message := "you must activate your account"
+
+	app.errorResponse(w, r, http.StatusUnauthorized, message)
+}
